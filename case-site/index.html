@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Site</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://sdk.games.s3.yandex.net/sdk.js"></script>
+</head>
+<body>
+    <div class="bg-layer"></div>
+    <div class="bg-vignette"></div>
+
+    <main id="menuScreen" class="screen active">
+        <header class="topbar">
+            <div class="logo">🎁 CASE SITE</div>
+            <nav class="nav">
+                <button class="nav-btn active" id="navCases">Кейсы</button>
+                <button class="nav-btn" id="navUpgrade">Апгрейд</button>
+                <button class="nav-btn" id="navInventory">Инвентарь</button>
+            </nav>
+            <div class="topbar-right">
+                <button class="donate-btn" id="donateBtn" title="Пополнить баланс">
+                    <span class="donate-icon">💰</span>
+                    <span class="donate-text">Донат</span>
+                </button>
+                <div class="balance">
+                    <span class="balance-label">Баланс</span>
+                    <span class="balance-value"><span id="balance">1000</span> ₽</span>
+                </div>
+                <div class="profile-area" id="profileArea">
+                    <div class="profile-greeting" id="profileGreeting"></div>
+                    <button class="profile-btn" id="profileBtn" title="Профиль">
+                        <img class="profile-btn-avatar" id="profileBtnAvatar" alt="" style="display:none;">
+                        <span class="profile-btn-icon" id="profileBtnIcon">👤</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section class="menu-content" id="casesView">
+            <h2 class="section-title">Последние выпадения</h2>
+            <div class="drops-strip" id="dropsStrip"></div>
+
+            <h2 class="section-title" style="margin-top:2rem;">Кейсы</h2>
+            <div class="cases-grid" id="casesGrid"></div>
+        </section>
+
+        <section class="menu-content" id="upgradeView" style="display:none;">
+            <h2 class="section-title">Апгрейд скинов</h2>
+
+            <div class="upgrade-layout">
+                <div class="upgrade-left">
+                    <div class="upgrade-slots">
+                        <div class="upgrade-slot-block">
+                            <h3 class="upgrade-side-title">Мои скины (до 5)</h3>
+                            <div class="upgrade-slot upgrade-slot-multi" id="upgradeMySlot">
+                                <div class="upgrade-slot-empty">
+                                    <div class="slot-icon">📦</div>
+                                    <span>Выбери до 5 скинов</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="upgrade-slot-block">
+                            <h3 class="upgrade-side-title">Целевой скин</h3>
+                            <div class="upgrade-slot" id="upgradeTargetSlot">
+                                <div class="upgrade-slot-empty">
+                                    <div class="slot-icon">🎯</div>
+                                    <span>Выбери цель из кейсов</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="upgrade-chance-card">
+                        <div class="chance-row">
+                            <span class="chance-label">Шанс апгрейда</span>
+                            <span class="chance-value" id="upgradeChance">—</span>
+                        </div>
+                        <div class="chance-bar">
+                            <div class="chance-fill" id="upgradeChanceFill" style="width:0%;"></div>
+                        </div>
+                        <div class="chance-meta">
+                            <span>Сумма моих: <strong id="myPriceLabel">—</strong></span>
+                            <span>Цель: <strong id="targetPriceLabel">—</strong></span>
+                        </div>
+                    </div>
+
+                    <button class="upgrade-btn" id="upgradeBtn" disabled>
+                        <span class="upgrade-btn-icon">🚀</span>
+                        Крутить
+                    </button>
+                    <div class="upgrade-result" id="upgradeResult"></div>
+                </div>
+
+                <div class="upgrade-right">
+                    <div class="wheel-container">
+                        <canvas id="upgradeWheel" width="380" height="380"></canvas>
+                        <div class="wheel-arrow" id="wheelArrow">
+                            <svg viewBox="0 0 30 40" width="30" height="40">
+                                <polygon points="15,40 0,0 30,0" fill="#5b8cff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="wheel-center">
+                            <div class="wheel-center-chance" id="wheelCenterChance">—</div>
+                            <div class="wheel-center-label">шанс</div>
+                        </div>
+                    </div>
+                    <div class="wheel-hint" id="wheelHint">Выбери свои скины и цель</div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">Целевые скины (из кейсов)</h3>
+            <div class="inventory-grid" id="upgradeTargetsGrid"></div>
+        </section>
+
+        <section class="menu-content" id="inventoryView" style="display:none;">
+            <div class="inventory-head">
+                <h2 class="section-title">Инвентарь</h2>
+                <div class="inventory-actions">
+                    <span class="inv-total">Стоимость: <span id="invTotal">0</span> ₽</span>
+                    <button class="sell-all-btn" id="sellAllBtn">Продать всё</button>
+                </div>
+            </div>
+            <div class="inventory-grid" id="inventoryGrid"></div>
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <p>Инвентарь пуст. Открой кейс, чтобы получить скин.</p>
+            </div>
+        </section>
+    </main>
+
+    <main id="caseScreen" class="screen">
+        <header class="topbar">
+            <button class="back-btn" id="backBtn">← Назад</button>
+            <div class="topbar-right">
+                <button class="donate-btn" id="donateBtn2" title="Пополнить баланс">
+                    <span class="donate-icon">💰</span>
+                    <span class="donate-text">Донат</span>
+                </button>
+                <div class="balance">
+                    <span class="balance-label">Баланс</span>
+                    <span class="balance-value"><span id="balance2">1000</span> ₽</span>
+                </div>
+            </div>
+        </header>
+        <section class="case-content">
+            <h2 class="case-title" id="caseTitle">Mirage</h2>
+            <div class="reel-container">
+                <div class="reel-marker" aria-hidden="true"></div>
+                <div class="reel" id="reel"></div>
+            </div>
+
+            <div class="open-row">
+                <button class="open-btn" id="openBtn">Открыть за <span id="casePrice">0</span> ₽</button>
+                <button class="fast-btn" id="fastBtn" title="Быстрая прокрутка">⚡</button>
+            </div>
+            <div class="result-message" id="resultMsg"></div>
+
+            <h3 class="section-subtitle">Содержимое кейса</h3>
+            <div class="items-preview" id="itemsPreview"></div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="pickModal">
+        <div class="modal" style="max-width:640px;">
+            <button class="modal-close" id="pickClose">✕</button>
+            <div class="modal-title" id="pickTitle">Выбор скинов</div>
+            <p class="modal-subtitle" id="pickSubtitle">Можно выбрать до 5 скинов</p>
+            <div class="pick-grid" id="pickGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div class="modal-title">Мой профиль</div>
+            <div class="profile-avatar-wrap">
+                <div class="avatar-edit-wrap">
+                    <img class="profile-avatar" id="profileAvatar" alt="">
+                    <label class="avatar-edit-btn" title="Сменить аватар">
+                        ✎
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                    </label>
+                </div>
+            </div>
+            <div class="profile-field">
+                <label class="field-label">Ник</label>
+                <div class="field-row">
+                    <input class="field-input" id="nickInput" type="text" maxlength="20" placeholder="Твой ник">
+                    <button class="save-btn" id="saveNickBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="donateModal">
+        <div class="modal donate-modal">
+            <button class="modal-close" id="donateClose">✕</button>
+            <div class="modal-title">Пополнение баланса</div>
+            <p class="modal-subtitle">Пока бесплатно — нажми на пакет и получи деньги</p>
+            <div class="donate-grid" id="donateGrid"></div>
+            <p class="donate-note">Скоро здесь появятся реальные платежи</p>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/yandex-sdk.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
